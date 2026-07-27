@@ -88,7 +88,6 @@ tr.lib-item:hover { background: var(--panel2); }
 tr.lib-item.active { background: rgba(138,92,246,.18); }
 tr.lib-filler { visibility: hidden; }
 .lib-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lib-lyrtag { color: var(--accent2); width: 90px; font-size: 12px; }
 .lib-act { width: 70px; }
 /* flex must live on an inner div — display:flex on a <td> breaks it out of
    the table cell model and the column width stops applying */

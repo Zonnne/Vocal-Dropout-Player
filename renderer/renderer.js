@@ -544,9 +544,6 @@ async function renderLibrary({ fit = true } = {}) {
     name.className = 'lib-name';
     name.textContent = entry.name;
     name.title = entry.filePath || entry.name;
-    const lyrTag = document.createElement('td');
-    lyrTag.className = 'lib-lyrtag';
-    lyrTag.textContent = entry.hasLyrics ? 'with lyric' : '';
     const act = document.createElement('td');
     act.className = 'lib-act';
     const lyr = document.createElement('button');
@@ -583,7 +580,7 @@ async function renderLibrary({ fit = true } = {}) {
     actInner.className = 'lib-act-inner';
     actInner.append(lyr, remove);
     act.appendChild(actInner);
-    tr.append(name, lyrTag, act);
+    tr.append(name, act);
     tr.addEventListener('click', () => handleCached(entry));
     libraryList.appendChild(tr);
   }
@@ -594,7 +591,7 @@ async function renderLibrary({ fit = true } = {}) {
       tr.className = 'lib-item lib-filler';
       // match real row metrics exactly (incl. the remove button) so the
       // table height never changes between pages
-      tr.innerHTML = '<td class="lib-name">&nbsp;</td><td class="lib-lyrtag"></td>' +
+      tr.innerHTML = '<td class="lib-name">&nbsp;</td>' +
         '<td class="lib-act"><button class="lib-remove" tabindex="-1">✕</button></td>';
       libraryList.appendChild(tr);
     }
