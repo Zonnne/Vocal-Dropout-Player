@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build output (DMG / exe / unpacked apps)
+dist/
+
+# electron-builder intermediates
+out/
+
+# macOS junk
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# logs
+*.log
+npm-debug.log*
+
+# local env / signing secrets — NEVER commit these
+.env
+.env.*
+*.p12
+*.mobileprovision

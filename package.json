@@ -1,0 +1,52 @@
+{
+  "name": "vocal-dropout-player",
+  "version": "1.0.0",
+  "description": "Desktop music player with AI stem separation and random vocal dropouts",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/dropout-planner.test.js && node test/lyrics.test.js",
+    "dist": "electron-builder --mac --arm64",
+    "dist:intel": "electron-builder --mac --x64",
+    "dist:win": "electron-builder --win --x64",
+    "dist:all": "electron-builder --mac --arm64 --x64 && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.vocaldropout.player",
+    "productName": "Vocal Dropout Player",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**",
+      "src/**",
+      "package.json"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.music",
+      "icon": "build/icon.icns"
+    },
+    "dmg": {
+      "title": "Vocal Dropout Player"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Vocal Dropout Player"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

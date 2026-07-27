@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'" />
+  <title>Vocal Dropout Player</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="drop-overlay"><div class="drop-hint">Drop it!</div></div>
+
+  <main class="app">
+    <header>
+      <h1>Vocal Dropout Player</h1>
+      <span id="vocal-badge" class="badge hidden">VOCAL OUT</span>
+    </header>
+
+    <section id="library" class="library">
+      <div class="lib-head">
+        <h2>Cached songs</h2>
+        <div class="lib-head-right">
+          <span id="lib-status" class="lib-status"></span>
+          <button id="browse-btn" class="btn small">Add song…</button>
+        </div>
+      </div>
+      <div id="lib-empty" class="lib-empty">No cached songs yet — add one to get started.</div>
+      <table id="lib-table" class="lib-table hidden">
+        <tbody id="library-list"></tbody>
+      </table>
+      <div id="lib-pager" class="lib-pager hidden">
+        <button id="lib-prev" class="pager-btn">‹ Prev</button>
+        <span id="lib-page-info">1 / 1</span>
+        <button id="lib-next" class="pager-btn">Next ›</button>
+      </div>
+    </section>
+
+    <section id="transport" class="transport hidden">
+      <button id="play-btn" class="btn big" disabled>▶</button>
+      <span id="time-cur" class="time">0:00</span>
+      <div class="seek-wrap">
+        <canvas id="dropout-timeline" title="Dropouts reveal here as you hear them"></canvas>
+        <input id="seek" type="range" min="0" max="1000" value="0" disabled />
+      </div>
+      <span id="time-total" class="time">0:00</span>
+    </section>
+
+    <section id="controls" class="controls hidden">
+      <div id="poisson-controls" class="ctl-group">
+        <div class="ctl">
+          <label>Dropout duration <span id="dur-val" class="val">1.0s</span></label>
+          <input id="dur-slider" type="range" min="0.5" max="3" step="0.1" value="1" />
+          <div class="range-labels"><span>0.5s</span><span>3.0s</span></div>
+        </div>
+        <div class="ctl">
+          <label>Dropout frequency <span id="freq-val" class="val">10 /min</span></label>
+          <input id="freq-slider" type="range" min="0" max="60" step="1" value="10" />
+          <div class="range-labels"><span>off</span><span>60 /min</span></div>
+        </div>
+        <div class="ctl">
+          <label>Min gap between dropouts <span id="gap-val" class="val">5.0s</span></label>
+          <input id="gap-slider" type="range" min="0" max="10" step="0.5" value="5" />
+          <div class="range-labels"><span>no cooldown</span><span>10s</span></div>
+        </div>
+      </div>
+      <div id="lyrics-controls" class="ctl-group hidden">
+        <div class="ctl">
+          <label>Dropout intensity <span id="wpt-val" class="val">2 words /10</span></label>
+          <input id="wpt-slider" type="range" min="1" max="4" step="1" value="2" />
+          <div class="range-labels"><span>1 word /10</span><span>4 words /10</span></div>
+        </div>
+        <div class="lyrics-hint">
+          Lyrics mode: on average this many words are muted per 10 words of lyrics
+          (Poisson-distributed). Each dropout mutes 1–2 consecutive words; the first
+          2 words of every line are never muted; dropouts keep a 3-word minimum gap.
+        </div>
+      </div>
+      <div class="ctl checkbox">
+        <label>
+          <input id="fade-toggle" type="checkbox" checked />
+          Smooth mute edges (10ms raised-cosine fade)
+        </label>
+      </div>
+      <div class="ctl">
+        <label>Vocal / instrumental balance <span id="bal-val" class="val">100%</span></label>
+        <input id="bal-slider" type="range" min="0" max="100" step="1" value="100" />
+        <div class="range-labels"><span>instrumental</span><span>full vocal</span></div>
+      </div>
+      <div class="ctl">
+        <label>Master volume <span id="vol-val" class="val">80%</span></label>
+        <input id="vol-slider" type="range" min="0" max="100" step="1" value="80" />
+      </div>
+    </section>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
