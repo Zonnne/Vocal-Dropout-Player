@@ -10,8 +10,12 @@ permissions:
 
 jobs:
   build-mac:
-    name: macOS (arm64 + x64)
+    name: macOS (${{ matrix.arch }})
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +24,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Build & publish DMGs
-        run: npx electron-builder --mac --arm64 --x64 --publish always
+      # one arch per job: both DMGs mount the same volume name, and a stale
+      # mount from the first build makes the second one's hdiutil detach fail
+      - name: Detach stale DMG mounts
+        run: hdiutil detach "/Volumes/Vocal Dropout Player" -force 2>/dev/null || true
+      - name: Build & publish DMG
+        run: npx electron-builder --mac ${{ matrix.arch }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # unsigned build — drop this once you add an Apple Developer cert
