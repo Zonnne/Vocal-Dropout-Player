@@ -547,7 +547,10 @@ async function renderLibrary({ fit = true } = {}) {
       await dropoutApi.removeFromLibrary(entry.hash);
       renderLibrary();
     });
-    act.append(lyr, remove);
+    const actInner = document.createElement('div');
+    actInner.className = 'lib-act-inner';
+    actInner.append(lyr, remove);
+    act.appendChild(actInner);
     tr.append(name, date, act);
     tr.addEventListener('click', () => handleCached(entry));
     libraryList.appendChild(tr);
@@ -592,14 +595,19 @@ document.addEventListener('drop', e => {
   if (f) handleFile(dropoutApi.getPathForFile(f));
 });
 
-playBtn.addEventListener('click', () => (player.playing ? player.pause() : player.play()));
+playBtn.addEventListener('click', () => {
+  player.playing ? player.pause() : player.play();
+  playBtn.blur(); // keep Space as global play/pause — a focused button eats it
+});
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' && !e.target.matches('input,button')) {
     e.preventDefault();
     player.playing ? player.pause() : player.play();
   }
 });
-seekEl.addEventListener('change', () => player.seek(seekEl.value / 1000));
+// release focus after seeking, or updateTransport keeps skipping the slider
+// (it avoids touching a focused slider so it never fights an active drag)
+seekEl.addEventListener('change', () => { player.seek(seekEl.value / 1000); seekEl.blur(); });
 
 // Dropout math: one cycle = duration + gap, so the observed rate is
 // 60 / (duration + meanGap) per minute. The cooldown floor must fit inside

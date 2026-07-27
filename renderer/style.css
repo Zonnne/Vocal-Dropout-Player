@@ -83,8 +83,10 @@ tr.lib-item.active { background: rgba(138,92,246,.18); }
 tr.lib-filler { visibility: hidden; }
 .lib-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lib-date { color: var(--dim); width: 110px; font-variant-numeric: tabular-nums; }
-.lib-act { width: 70px; text-align: right; white-space: nowrap; }
-.lib-act { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.lib-act { width: 70px; }
+/* flex must live on an inner div — display:flex on a <td> breaks it out of
+   the table cell model and the column width stops applying */
+.lib-act-inner { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
 .lib-remove {
   background: none; border: none; color: var(--dim); font-size: 15px; line-height: 1;
   cursor: pointer; padding: 4px 6px; border-radius: 6px;
