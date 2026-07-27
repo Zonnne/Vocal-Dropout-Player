@@ -323,6 +323,10 @@ const player = {
     if (wasPlaying) { this.pause(); }
     this.startOffset = pos;
     this.planner.reset(pos);
+    // rewind erases "heard" dropouts ahead of the new playhead — re-planning
+    // from here means those old marks no longer match what will actually play
+    this.dropoutHistory = this.dropoutHistory.filter(ev => ev.start <= pos);
+    drawTimeline();
     if (wasPlaying) this.play();
     this.updateTransport(pos);
   },
@@ -331,6 +335,8 @@ const player = {
     this.playing = false;
     this.startOffset = 0;
     this.planner.reset(0);
+    this.dropoutHistory = []; // next playthrough gets a fresh plan — clear old marks
+    drawTimeline();
     playBtn.textContent = '▶';
     this.updateTransport(0);
     vocalBadge.classList.add('hidden');
