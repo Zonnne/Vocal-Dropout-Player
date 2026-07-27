@@ -6,7 +6,7 @@ Train your inner voice. The app plays a song with the vocals and instrumental
 on separate tracks, then drops the vocal out at random moments while the
 music keeps going. Your mind fills in the missing voice — that act of
 mental generation is the exercise. Because the timing is random, you can't
-memorize the pattern; you can only keep the song alive in your head.
+memorize the pattern
 
 ## Install
 
@@ -24,13 +24,10 @@ instrumental; the result is cached, so every play after that is instant.
 ## Use
 
 Drop a song onto the window. Press play. Adjust how long the vocal drops
-(0.5–3s) and how often (per minute). The marks above the seek bar show where
-the vocal already dropped — never where it will.
+(0.5–3s) and how often (per minute).
 
 If you have a character-timed `.lrc` lyrics file, attach it from the song's
 row and the app will mute whole words instead of random slices.
-
-Everything runs locally. Your songs never leave the machine.
 
 ## Develop
 
