@@ -29,6 +29,8 @@ Drop a song onto the window. Press play. Adjust how long the vocal drops
 If you have a character-timed `.lrc` lyrics file, attach it from the song's
 row and the app will mute whole words instead of random slices.
 
+check [LDDC](https://github.com/chenmozhijin/LDDC) for generating character-timed lyrics
+
 ## Develop
 
 ```bash
