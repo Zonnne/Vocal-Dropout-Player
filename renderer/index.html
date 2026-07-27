@@ -10,11 +10,6 @@
   <div id="drop-overlay"><div class="drop-hint">Drop it!</div></div>
 
   <main class="app">
-    <header>
-      <h1>Vocal Dropout Player</h1>
-      <span id="vocal-badge" class="badge hidden">VOCAL OUT</span>
-    </header>
-
     <section id="library" class="library">
       <div class="lib-head">
         <h2>Cached songs</h2>
@@ -35,13 +30,21 @@
     </section>
 
     <section id="transport" class="transport hidden">
-      <button id="play-btn" class="btn big" disabled>▶</button>
-      <span id="time-cur" class="time">0:00</span>
-      <div class="seek-wrap">
-        <canvas id="dropout-timeline" title="Dropouts reveal here as you hear them"></canvas>
-        <input id="seek" type="range" min="0" max="1000" value="0" disabled />
+      <div id="lyrics-view" class="lyrics-view hidden">
+        <div id="lyr-prev" class="lyr-line lyr-side"></div>
+        <div id="lyr-cur" class="lyr-line lyr-cur"></div>
+        <div id="lyr-next" class="lyr-line lyr-side"></div>
       </div>
-      <span id="time-total" class="time">0:00</span>
+      <div class="transport-bar">
+        <button id="play-btn" class="btn big" disabled>▶</button>
+        <span id="time-cur" class="time">0:00</span>
+        <div class="seek-wrap">
+          <canvas id="dropout-timeline" title="Dropouts reveal here as you hear them"></canvas>
+          <input id="seek" type="range" min="0" max="1000" value="0" disabled />
+        </div>
+        <span id="time-total" class="time">0:00</span>
+        <span id="vocal-badge" class="badge hidden">VOCAL OUT</span>
+      </div>
     </section>
 
     <section id="controls" class="controls hidden">

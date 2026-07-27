@@ -35,6 +35,7 @@ const libPrev = $('lib-prev'), libNext = $('lib-next');
 const poissonControls = $('poisson-controls'), lyricsControls = $('lyrics-controls');
 const wptSlider = $('wpt-slider'), wptVal = $('wpt-val');
 const timelineCanvas = $('dropout-timeline');
+const lyricsView = $('lyrics-view'), lyrPrev = $('lyr-prev'), lyrCur = $('lyr-cur'), lyrNext = $('lyr-next');
 
 // ---------- Dropout timeline (only reveals dropouts already PLAYED — no spoilers) ----------
 function drawTimeline() {
@@ -189,6 +190,17 @@ class LyricsPlanner {
   }
 }
 
+// Flatten a parsed lyric line to display text. Chinese tokens join directly;
+// a space is inserted only between two adjacent latin/digit tokens.
+function lineText(line) {
+  let s = '';
+  for (const w of line.words) {
+    if (s && /[A-Za-z0-9]$/.test(s) && /^[A-Za-z0-9]/.test(w.text)) s += ' ';
+    s += w.text;
+  }
+  return s;
+}
+
 const dropoutPlanner = new DropoutPlanner();
 const lyricsPlanner = new LyricsPlanner();
 
@@ -229,13 +241,18 @@ const player = {
       lyricsPlanner.setLines(lyrics.lines, this.duration);
       lyricsPlanner.setParams({ wordsPerTen: Number(wptSlider.value) });
       this.planner = lyricsPlanner;
+      this.lyricsLines = lyrics.lines.map(l => ({ start: l.start, text: lineText(l) }));
     } else {
       this.planner = dropoutPlanner;
+      this.lyricsLines = null;
     }
+    this._lyrIdx = null; // force the lyrics view to repaint
+    lyricsView.classList.toggle('hidden', !this.lyricsLines);
     poissonControls.classList.toggle('hidden', this.planner === lyricsPlanner);
     lyricsControls.classList.toggle('hidden', this.planner !== lyricsPlanner);
     this.planner.reset(this.position());
     this.rescheduleFromHere();
+    this.updateTransport(this.position());
     dropoutApi.fitWindow();
   },
 
@@ -410,8 +427,25 @@ const player = {
     this.tickTimer = setInterval(() => this.tick(), TICK_MS);
   },
 
+  // Sync the 3-line lyrics view: last line whose start <= playhead is current.
+  updateLyrics(pos) {
+    const lines = this.lyricsLines;
+    if (!lines) return;
+    let idx = -1, lo = 0, hi = lines.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (lines[mid].start <= pos) { idx = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    if (idx === this._lyrIdx) return;
+    this._lyrIdx = idx;
+    lyrPrev.textContent = idx > 0 ? lines[idx - 1].text : '';
+    lyrCur.textContent = idx >= 0 ? lines[idx].text : '';
+    lyrNext.textContent = idx + 1 < lines.length ? lines[idx + 1].text : '';
+  },
+
   updateTransport(pos) {
     timeCur.textContent = fmt(pos);
+    this.updateLyrics(pos);
     if (this.duration > 0 && document.activeElement !== seekEl) {
       seekEl.value = Math.round((pos / this.duration) * 1000);
     }
@@ -492,10 +526,6 @@ const LIB_PAGE_SIZE = 5;
 let libEntries = [];
 let libPage = 0;
 
-function fmtDate(ts) {
-  return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
 async function renderLibrary({ fit = true } = {}) {
   libEntries = await dropoutApi.listLibrary();
   const pages = Math.max(1, Math.ceil(libEntries.length / LIB_PAGE_SIZE));
@@ -512,9 +542,9 @@ async function renderLibrary({ fit = true } = {}) {
     name.className = 'lib-name';
     name.textContent = entry.name;
     name.title = entry.filePath || entry.name;
-    const date = document.createElement('td');
-    date.className = 'lib-date';
-    date.textContent = fmtDate(entry.addedAt);
+    const lyrTag = document.createElement('td');
+    lyrTag.className = 'lib-lyrtag';
+    lyrTag.textContent = entry.hasLyrics ? 'with lyric' : '';
     const act = document.createElement('td');
     act.className = 'lib-act';
     const lyr = document.createElement('button');
@@ -551,7 +581,7 @@ async function renderLibrary({ fit = true } = {}) {
     actInner.className = 'lib-act-inner';
     actInner.append(lyr, remove);
     act.appendChild(actInner);
-    tr.append(name, date, act);
+    tr.append(name, lyrTag, act);
     tr.addEventListener('click', () => handleCached(entry));
     libraryList.appendChild(tr);
   }
@@ -562,7 +592,7 @@ async function renderLibrary({ fit = true } = {}) {
       tr.className = 'lib-item lib-filler';
       // match real row metrics exactly (incl. the remove button) so the
       // table height never changes between pages
-      tr.innerHTML = '<td class="lib-name">&nbsp;</td><td class="lib-date"></td>' +
+      tr.innerHTML = '<td class="lib-name">&nbsp;</td><td class="lib-lyrtag"></td>' +
         '<td class="lib-act"><button class="lib-remove" tabindex="-1">✕</button></td>';
       libraryList.appendChild(tr);
     }

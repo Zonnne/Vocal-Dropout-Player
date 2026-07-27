@@ -10,8 +10,6 @@ body {
   min-height: 100vh; overflow: hidden;
 }
 .app { max-width: 760px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 18px; }
-header { display: flex; align-items: center; gap: 14px; }
-h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
 .badge {
   background: var(--danger); color: #1a0505; font-size: 11px; font-weight: 800;
   padding: 4px 10px; border-radius: 999px; letter-spacing: 1px;
@@ -29,8 +27,17 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
 .btn:disabled { opacity: 0.4; cursor: default; }
 .btn.big { font-size: 20px; width: 54px; height: 54px; border-radius: 50%; padding: 0; flex-shrink: 0; }
 
-.transport { display: flex; align-items: center; gap: 14px; background: var(--panel); border-radius: 12px; padding: 14px 18px; }
+.transport { display: flex; flex-direction: column; gap: 12px; background: var(--panel); border-radius: 12px; padding: 14px 18px; }
+.transport-bar { display: flex; align-items: center; gap: 14px; }
 .time { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--dim); width: 42px; text-align: center; }
+
+/* synced lyrics — 3-line karaoke view, current line highlighted */
+.lyrics-view { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 2px; min-height: 74px; justify-content: center; }
+.lyr-line { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .2s, font-size .2s; }
+.lyr-line:empty::after { content: '\00a0'; } /* keep row height when blank */
+.lyr-side { font-size: 13px; color: #55555f; }
+.lyr-cur { font-size: 17px; font-weight: 600; color: var(--fg); }
+.lyr-cur:empty::after { content: '♪'; color: #55555f; font-weight: 400; }
 
 .seek-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 #dropout-timeline {
@@ -82,7 +89,7 @@ tr.lib-item:hover { background: var(--panel2); }
 tr.lib-item.active { background: rgba(138,92,246,.18); }
 tr.lib-filler { visibility: hidden; }
 .lib-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lib-date { color: var(--dim); width: 110px; font-variant-numeric: tabular-nums; }
+.lib-lyrtag { color: var(--accent2); width: 90px; font-size: 12px; }
 .lib-act { width: 70px; }
 /* flex must live on an inner div — display:flex on a <td> breaks it out of
    the table cell model and the column width stops applying */
