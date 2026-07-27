@@ -10,12 +10,6 @@ body {
   min-height: 100vh; overflow: hidden;
 }
 .app { max-width: 760px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 18px; }
-.badge {
-  background: var(--danger); color: #1a0505; font-size: 11px; font-weight: 800;
-  padding: 4px 10px; border-radius: 999px; letter-spacing: 1px;
-  animation: pulse 0.6s ease-in-out infinite alternate;
-}
-@keyframes pulse { from { opacity: 1; } to { opacity: 0.45; } }
 .hidden { display: none !important; }
 
 .btn {
@@ -25,7 +19,12 @@ body {
 }
 .btn:hover { filter: brightness(1.15); }
 .btn:disabled { opacity: 0.4; cursor: default; }
-.btn.big { font-size: 20px; width: 54px; height: 54px; border-radius: 50%; padding: 0; flex-shrink: 0; }
+.btn.big {
+  font-size: 20px; width: 54px; height: 54px; border-radius: 50%; padding: 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+/* the ▶ glyph has baked-in left side bearing — nudge it to optical center */
+.btn.big.is-play { padding-left: 5px; }
 
 .transport { display: flex; flex-direction: column; gap: 12px; background: var(--panel); border-radius: 12px; padding: 14px 18px; }
 .transport-bar { display: flex; align-items: center; gap: 14px; }

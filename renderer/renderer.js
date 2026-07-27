@@ -23,7 +23,6 @@ const playBtn = $('play-btn'), seekEl = $('seek');
 const timeCur = $('time-cur'), timeTotal = $('time-total');
 const libStatus = $('lib-status'), browseBtn = $('browse-btn');
 const transportEl = $('transport'), controlsEl = $('controls');
-const vocalBadge = $('vocal-badge');
 const durSlider = $('dur-slider'), freqSlider = $('freq-slider'), gapSlider = $('gap-slider');
 const balSlider = $('bal-slider'), volSlider = $('vol-slider');
 const durVal = $('dur-val'), freqVal = $('freq-val'), gapVal = $('gap-val');
@@ -36,6 +35,12 @@ const poissonControls = $('poisson-controls'), lyricsControls = $('lyrics-contro
 const wptSlider = $('wpt-slider'), wptVal = $('wpt-val');
 const timelineCanvas = $('dropout-timeline');
 const lyricsView = $('lyrics-view'), lyrPrev = $('lyr-prev'), lyrCur = $('lyr-cur'), lyrNext = $('lyr-next');
+
+// ▶ has baked-in left bearing, ⏸ doesn't — toggle a class for optical centering
+function setPlayIcon(playing) {
+  playBtn.textContent = playing ? '⏸' : '▶';
+  playBtn.classList.toggle('is-play', !playing);
+}
 
 // ---------- Dropout timeline (only reveals dropouts already PLAYED — no spoilers) ----------
 function drawTimeline() {
@@ -272,7 +277,7 @@ const player = {
     drawTimeline();
     playBtn.disabled = false;
     seekEl.disabled = false;
-    playBtn.textContent = '▶';
+    setPlayIcon(false);
     timeTotal.textContent = fmt(this.duration);
     this.updateTransport(0);
   },
@@ -321,7 +326,7 @@ const player = {
     this.playing = true;
     this.startSources(this.startOffset);
     this.rescheduleFromHere(true);
-    playBtn.textContent = '⏸';
+    setPlayIcon(true);
     this.startTick();
   },
 
@@ -331,7 +336,7 @@ const player = {
     this.playing = false;
     this.stopSources();
     this.cancelAutomation();
-    playBtn.textContent = '▶';
+    setPlayIcon(false);
   },
 
   seek(frac) {
@@ -354,9 +359,8 @@ const player = {
     this.planner.reset(0);
     this.dropoutHistory = []; // next playthrough gets a fresh plan — clear old marks
     drawTimeline();
-    playBtn.textContent = '▶';
+    setPlayIcon(false);
     this.updateTransport(0);
-    vocalBadge.classList.add('hidden');
   },
 
   cancelAutomation() {
@@ -382,7 +386,6 @@ const player = {
     } else {
       g.setValueAtTime(1, now);
     }
-    vocalBadge.classList.add('hidden');
   },
 
   scheduleEvent(ev) {
@@ -418,7 +421,6 @@ const player = {
     }
     drawTimeline();
     this.planner.pruneBefore(pos - 1);
-    vocalBadge.classList.toggle('hidden', !this.planner.isMutedAt(pos));
     this.updateTransport(pos);
   },
 
