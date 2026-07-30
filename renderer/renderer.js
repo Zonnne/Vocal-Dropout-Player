@@ -680,6 +680,11 @@ async function renderLibrary({ fit = true } = {}) {
 libPrev.addEventListener('click', () => { libPage--; renderLibrary({ fit: false }); });
 libNext.addEventListener('click', () => { libPage++; renderLibrary({ fit: false }); });
 
+// collapse the library to a slim rail — gives long track titles room to breathe
+$('lib-collapse').addEventListener('click', () => {
+  document.querySelector('.app-shell').classList.toggle('lib-collapsed');
+});
+
 // ---------- UI wiring ----------
 $('browse-btn').addEventListener('click', async () => handleFile(await dropoutApi.openFile()));
 $('restart-btn').addEventListener('click', () => player.seek(0));

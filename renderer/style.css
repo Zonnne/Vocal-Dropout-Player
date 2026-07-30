@@ -35,3 +35,20 @@ button, input { font:inherit; } button { cursor:pointer; }
 @keyframes libspin{to{transform:rotate(360deg)}}
 .lib-pending{cursor:default}
 .lib-pending:hover{background:none}
+
+/* --- collapsible library rail --- */
+.lib-head-btns{display:flex;align-items:center;gap:2px}
+#lib-collapse{font-size:15px;transition:transform .22s,color .15s,background .15s}
+.app-shell{transition:grid-template-columns .22s ease}
+.app-shell.lib-collapsed{grid-template-columns:46px minmax(380px,1fr) 280px}
+.lib-collapsed .library{overflow:hidden}
+.lib-collapsed .library>:not(.library-head){display:none}
+.lib-collapsed .library-head{justify-content:center;padding:16px 8px}
+.lib-collapsed .library-head>div:first-child,.lib-collapsed #browse-btn{display:none}
+.lib-collapsed #lib-collapse{transform:rotate(180deg)}
+@media (max-width:900px){.app-shell.lib-collapsed{grid-template-columns:46px minmax(360px,1fr) 250px}}
+
+/* --- seek bar vs side timestamps: monospace digits sit on the baseline, so
+   inside a centered line box the glyphs ride ~2px high; pull them back down --- */
+.transport-bar .time{line-height:1;transform:translateY(1px)}
+input[type=range]{margin:0}
