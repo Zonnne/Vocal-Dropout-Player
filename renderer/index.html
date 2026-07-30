@@ -7,93 +7,133 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="drop-overlay"><div class="drop-hint">Drop it!</div></div>
+  <div id="drop-overlay"><div class="drop-hint">Drop audio to add it</div></div>
 
-  <main class="app">
-    <section id="library" class="library">
-      <div class="lib-head">
-        <h2>Cached songs</h2>
-        <div class="lib-head-right">
-          <span id="lib-status" class="lib-status"></span>
-          <button id="browse-btn" class="btn small">Add song…</button>
+  <main class="app-shell">
+    <aside id="library" class="library" aria-label="Song library">
+      <header class="panel-head library-head">
+        <div>
+          <p class="eyebrow">Collection</p>
+          <h1>Library</h1>
         </div>
+        <button id="browse-btn" class="icon-btn add-song" title="Add song" aria-label="Add song">+</button>
+      </header>
+      <div id="lib-status" class="lib-status" aria-live="polite"></div>
+      <div id="lib-empty" class="lib-empty">
+        <span class="empty-note">♫</span>
+        <p>No cached songs</p>
+        <small>Add a track or drop audio anywhere.</small>
       </div>
-      <div id="lib-empty" class="lib-empty">No cached songs yet — add one to get started.</div>
-      <table id="lib-table" class="lib-table hidden">
-        <tbody id="library-list"></tbody>
-      </table>
-      <div id="lib-pager" class="lib-pager hidden">
-        <button id="lib-prev" class="pager-btn">‹ Prev</button>
+      <table id="lib-table" class="lib-table hidden"><tbody id="library-list"></tbody></table>
+      <footer id="lib-pager" class="lib-pager hidden">
+        <button id="lib-prev" class="pager-btn" aria-label="Previous library page">‹</button>
         <span id="lib-page-info">1 / 1</span>
-        <button id="lib-next" class="pager-btn">Next ›</button>
-      </div>
-    </section>
+        <button id="lib-next" class="pager-btn" aria-label="Next library page">›</button>
+      </footer>
+    </aside>
 
-    <section id="transport" class="transport hidden">
-      <div id="lyrics-view" class="lyrics-view hidden">
-        <div id="lyr-prev" class="lyr-line lyr-side"></div>
-        <div id="lyr-cur" class="lyr-line lyr-cur"></div>
-        <div id="lyr-next" class="lyr-line lyr-side"></div>
+    <section class="workspace">
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">♫</div>
+        <h2>No audio selected</h2>
+        <p>Select a cached track from the library, or drop a new audio file into this window to begin.</p>
       </div>
-      <div class="transport-bar">
-        <button id="play-btn" class="btn big" disabled>▶</button>
-        <span id="time-cur" class="time">0:00</span>
-        <div class="seek-wrap">
+
+      <section id="transport" class="transport hidden" aria-label="Playback workspace">
+        <header class="track-head">
+          <div>
+            <p class="eyebrow">Vocal dropout session</p>
+            <h2 id="track-title">Ready to play</h2>
+            <p id="track-status" class="track-status">Status: Ready</p>
+          </div>
+          <output id="time-readout" class="time-readout">0:00</output>
+        </header>
+
+        <div class="waveform" aria-label="Dropout timeline">
+          <div class="waveform-bars" aria-hidden="true"></div>
           <canvas id="dropout-timeline" title="Dropouts reveal here as you hear them"></canvas>
-          <input id="seek" type="range" min="0" max="1000" value="0" disabled />
         </div>
-        <span id="time-total" class="time">0:00</span>
-      </div>
+
+        <div class="transport-bar">
+          <div class="transport-actions">
+            <button class="transport-icon" id="restart-btn" title="Restart" aria-label="Restart playback">|◀</button>
+            <button id="play-btn" class="play-btn" disabled aria-label="Play">▶</button>
+            <button class="transport-icon" disabled title="Next track" aria-label="Next track">▶|</button>
+          </div>
+          <span id="time-cur" class="time">0:00</span>
+          <div class="seek-wrap">
+            <input id="seek" type="range" min="0" max="1000" value="0" disabled aria-label="Playback position" />
+          </div>
+          <span id="time-total" class="time">0:00</span>
+        </div>
+
+        <div id="lyrics-view" class="lyrics-view hidden">
+          <div id="lyr-prev" class="lyr-line lyr-side"></div>
+          <div id="lyr-cur" class="lyr-line lyr-cur"></div>
+          <div id="lyr-next" class="lyr-line lyr-side"></div>
+        </div>
+      </section>
     </section>
 
-    <section id="controls" class="controls hidden">
+    <aside id="controls" class="controls hidden" aria-label="Inspector">
+      <header class="panel-head inspector-head">
+        <div>
+          <p class="eyebrow">Settings</p>
+          <h2>Inspector</h2>
+        </div>
+        <span id="mode-badge" class="mode-badge">Timing mode</span>
+      </header>
+
       <div id="poisson-controls" class="ctl-group">
+        <h3>Dropout parameters</h3>
         <div class="ctl">
-          <label>Dropout duration <span id="dur-val" class="val">1.0s</span></label>
+          <label>Duration <span id="dur-val" class="val">1.0s</span></label>
           <input id="dur-slider" type="range" min="0.5" max="3" step="0.1" value="1" />
           <div class="range-labels"><span>0.5s</span><span>3.0s</span></div>
         </div>
         <div class="ctl">
-          <label>Dropout frequency <span id="freq-val" class="val">10 /min</span></label>
+          <label>Frequency <span id="freq-val" class="val">10 /min</span></label>
           <input id="freq-slider" type="range" min="0" max="60" step="1" value="10" />
           <div class="range-labels"><span>off</span><span>60 /min</span></div>
         </div>
         <div class="ctl">
-          <label>Min gap between dropouts <span id="gap-val" class="val">5.0s</span></label>
+          <label>Minimum gap <span id="gap-val" class="val">5.0s</span></label>
           <input id="gap-slider" type="range" min="0" max="10" step="0.5" value="5" />
           <div class="range-labels"><span>no cooldown</span><span>10s</span></div>
         </div>
       </div>
+
       <div id="lyrics-controls" class="ctl-group hidden">
+        <h3>Dropout parameters</h3>
         <div class="ctl">
-          <label>Dropout intensity <span id="wpt-val" class="val">2 words /10</span></label>
+          <label>Intensity <span id="wpt-val" class="val">2 words /10</span></label>
           <input id="wpt-slider" type="range" min="1" max="4" step="1" value="2" />
           <div class="range-labels"><span>1 word /10</span><span>4 words /10</span></div>
         </div>
-        <div class="lyrics-hint">
-          Lyrics mode: on average this many words are muted per 10 words of lyrics
-          (Poisson-distributed). Each dropout mutes 1–2 consecutive words; the first
-          2 words of every line are never muted; dropouts keep a 3-word minimum gap.
+        <div class="lyrics-hint">Lyrics mode randomly mutes 1–2 consecutive words. The first two words in each line remain safe, with a three-word minimum gap.</div>
+      </div>
+
+      <div class="inspector-section">
+        <h3>Mute shape</h3>
+        <div class="ctl checkbox">
+          <label><input id="fade-toggle" type="checkbox" checked /> <span>Smooth mute edges</span></label>
+          <small>10ms raised-cosine fade</small>
         </div>
       </div>
-      <div class="ctl checkbox">
-        <label>
-          <input id="fade-toggle" type="checkbox" checked />
-          Smooth mute edges (10ms raised-cosine fade)
-        </label>
+      <div class="inspector-section mix-section">
+        <h3>Mix &amp; output</h3>
+        <div class="ctl">
+          <label>Vocals / instrumental <span id="bal-val" class="val">100%</span></label>
+          <input id="bal-slider" type="range" min="0" max="100" step="1" value="100" />
+          <div class="range-labels"><span>instrumental</span><span>vocals</span></div>
+        </div>
+        <div class="ctl">
+          <label>Master volume <span id="vol-val" class="val">80%</span></label>
+          <input id="vol-slider" type="range" min="0" max="100" step="1" value="80" />
+        </div>
       </div>
-      <div class="ctl">
-        <label>Vocal / instrumental balance <span id="bal-val" class="val">100%</span></label>
-        <input id="bal-slider" type="range" min="0" max="100" step="1" value="100" />
-        <div class="range-labels"><span>instrumental</span><span>full vocal</span></div>
-      </div>
-      <div class="ctl">
-        <label>Master volume <span id="vol-val" class="val">80%</span></label>
-        <input id="vol-slider" type="range" min="0" max="100" step="1" value="80" />
-      </div>
-    </section>
+    </aside>
   </main>
-
   <script src="renderer.js"></script>
 </body>
 </html>

@@ -35,14 +35,17 @@ const poissonControls = $('poisson-controls'), lyricsControls = $('lyrics-contro
 const wptSlider = $('wpt-slider'), wptVal = $('wpt-val');
 const timelineCanvas = $('dropout-timeline');
 const lyricsView = $('lyrics-view'), lyrPrev = $('lyr-prev'), lyrCur = $('lyr-cur'), lyrNext = $('lyr-next');
+const emptyState = $('empty-state'), trackTitle = $('track-title'), trackStatus = $('track-status');
+const timeReadout = $('time-readout'), modeBadge = $('mode-badge');
 
 // ▶ has baked-in left bearing, ⏸ doesn't — toggle a class for optical centering
 function setPlayIcon(playing) {
   playBtn.textContent = playing ? '⏸' : '▶';
   playBtn.classList.toggle('is-play', !playing);
+  playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
 }
 
-// ---------- Dropout timeline (only reveals dropouts already PLAYED — no spoilers) ----------
+// ---------- Waveform timeline (heard dropouts remain tinted; future ones stay hidden) ----------
 function drawTimeline() {
   const c = timelineCanvas;
   if (!c || !c.clientWidth) return;
@@ -53,16 +56,51 @@ function drawTimeline() {
   const g = c.getContext('2d');
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.clearRect(0, 0, w, h);
-  if (!player.duration) return;
-  g.fillStyle = 'rgba(248, 113, 113, 0.9)'; // --danger, matches VOCAL OUT badge
+  const buffer = player.buffers && (player.buffers.inst || player.buffers.vocals);
+  if (!player.duration || !buffer) return;
+
+  const data = buffer.getChannelData(0);
+  // Use a deliberately small number of broad bars: this is a transport
+  // overview, not a sample-level waveform editor.
+  const barCount = Math.min(120, Math.max(60, Math.floor(w / 7)));
+  const samplesPerBar = Math.max(1, Math.floor(data.length / barCount));
+  const mid = h / 2, half = Math.max(1, h * 0.38);
+  const playedUntil = player.position();
+
+  // This uses the identical duration-normalized coordinate system as #seek.
+  // History is populated only after a dropout starts, so it never spoils an
+  // upcoming mute, but remains available as a record of what was heard.
+  g.fillStyle = 'rgba(255, 107, 107, 0.18)';
   for (const ev of player.dropoutHistory) {
     const x0 = (ev.start / player.duration) * w;
-    const x1 = Math.max((ev.end / player.duration) * w, x0 + 2);
-    g.beginPath();
-    if (g.roundRect) g.roundRect(x0, 1, x1 - x0, h - 2, 2);
-    else g.rect(x0, 1, x1 - x0, h - 2);
-    g.fill();
+    const x1 = (ev.end / player.duration) * w;
+    g.fillRect(x0, 0, Math.max(2, x1 - x0), h);
   }
+
+  for (let bar = 0; bar < barCount; bar++) {
+    const start = bar * samplesPerBar;
+    const end = Math.min(data.length, start + samplesPerBar);
+    let peak = 0;
+    for (let i = start; i < end; i++) peak = Math.max(peak, Math.abs(data[i]));
+
+    const time = ((bar + 0.5) / barCount) * player.duration;
+    const isDropout = player.dropoutHistory.some(ev => time >= ev.start && time < ev.end);
+    g.strokeStyle = isDropout ? 'rgba(255, 107, 107, 0.95)'
+      : time <= playedUntil ? 'rgba(255, 159, 28, 0.95)' : 'rgba(112, 117, 123, 0.72)';
+    const x = ((bar + 0.5) / barCount) * w;
+    g.lineWidth = Math.max(2, Math.min(4, (w / barCount) * 0.58));
+    g.beginPath();
+    g.moveTo(x + 0.5, mid - Math.max(1, peak * half));
+    g.lineTo(x + 0.5, mid + Math.max(1, peak * half));
+    g.stroke();
+  }
+
+  const playheadX = Math.min(w - 1, (playedUntil / player.duration) * w);
+  g.strokeStyle = 'rgba(241, 240, 235, 0.9)';
+  g.beginPath();
+  g.moveTo(playheadX + 0.5, 0);
+  g.lineTo(playheadX + 0.5, h);
+  g.stroke();
 }
 new ResizeObserver(() => drawTimeline()).observe(timelineCanvas);
 
@@ -71,6 +109,12 @@ function fmt(t) {
   const m = Math.floor(t / 60), s = Math.floor(t % 60);
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+function paintRange(input) {
+  const min = Number(input.min) || 0, max = Number(input.max) || 100;
+  const percent = ((Number(input.value) - min) / (max - min)) * 100;
+  input.style.setProperty('--range-progress', `${Math.max(0, Math.min(100, percent))}%`);
+}
+function paintRanges() { document.querySelectorAll('input[type="range"]').forEach(paintRange); }
 function setStatus(msg, cls = '') {
   libStatus.textContent = msg;
   libStatus.className = `lib-status ${cls}`;
@@ -255,6 +299,7 @@ const player = {
     lyricsView.classList.toggle('hidden', !this.lyricsLines);
     poissonControls.classList.toggle('hidden', this.planner === lyricsPlanner);
     lyricsControls.classList.toggle('hidden', this.planner !== lyricsPlanner);
+    modeBadge.textContent = this.lyricsLines ? 'Lyrics mode' : 'Timing mode';
     this.planner.reset(this.position());
     this.rescheduleFromHere();
     this.updateTransport(this.position());
@@ -447,9 +492,11 @@ const player = {
 
   updateTransport(pos) {
     timeCur.textContent = fmt(pos);
+    timeReadout.textContent = fmt(pos);
     this.updateLyrics(pos);
     if (this.duration > 0 && document.activeElement !== seekEl) {
       seekEl.value = Math.round((pos / this.duration) * 1000);
+      paintRange(seekEl);
     }
   },
 };
@@ -464,6 +511,7 @@ function beginLoad(name) {
   if (progressOff) progressOff();
   progressOff = null;
   setStatus(name);
+  trackStatus.textContent = `Loading: ${name}`;
 }
 
 function endLoad() {
@@ -484,6 +532,10 @@ async function finishLoad(result, name, t0) {
   player.setLyrics(lyrics); // pick planner (lyrics vs time-based) now that duration is known
   if (wasPlaying) player.play(); // swap seamlessly into the new song
   activeHash = hash || null;
+  trackTitle.textContent = name.replace(/\.[^.]+$/, '');
+  trackTitle.title = name;
+  trackStatus.textContent = cached ? 'Status: Ready from cache' : 'Status: Stems separated and ready';
+  emptyState.classList.add('hidden');
   transportEl.classList.remove('hidden');
   controlsEl.classList.remove('hidden');
   libPage = 0; // newly added/active song is at the top of the list
@@ -610,6 +662,7 @@ libNext.addEventListener('click', () => { libPage++; renderLibrary({ fit: false 
 
 // ---------- UI wiring ----------
 $('browse-btn').addEventListener('click', async () => handleFile(await dropoutApi.openFile()));
+$('restart-btn').addEventListener('click', () => player.seek(0));
 
 ['dragenter', 'dragover'].forEach(ev =>
   document.addEventListener(ev, e => { e.preventDefault(); overlay.classList.add('on'); }));
@@ -650,6 +703,7 @@ function applyDropoutParams() {
   gapVal.textContent = G === 0 ? 'off' : `${G.toFixed(1)}s`;
   player.planner.setParams({ durationSec: D, perMinute: F, minGapSec: G });
   player.rescheduleFromHere();
+  paintRanges();
 }
 
 function floorTo(v, step) { return Math.floor(v / step) * step; }
@@ -686,13 +740,15 @@ wptSlider.addEventListener('input', () => {
   wptVal.textContent = `${v} word${v > 1 ? 's' : ''} /10`;
   lyricsPlanner.setParams({ wordsPerTen: v });
   player.rescheduleFromHere();
+  paintRange(wptSlider);
 });
 fadeToggle.addEventListener('change', () => player.rescheduleFromHere());
-balSlider.addEventListener('input', () => { balVal.textContent = `${balSlider.value}%`; player.applyMix(); });
-volSlider.addEventListener('input', () => { volVal.textContent = `${volSlider.value}%`; player.applyMix(); });
+balSlider.addEventListener('input', () => { balVal.textContent = `${balSlider.value}%`; player.applyMix(); paintRange(balSlider); });
+volSlider.addEventListener('input', () => { volVal.textContent = `${volSlider.value}%`; player.applyMix(); paintRange(volSlider); });
 
 // ---------- Init ----------
 player.planner.setParams({ minGapSec: Number(gapSlider.value) });
+paintRanges();
 renderLibrary();
 
 // Audio-engine (demucs) one-time setup runs in the background at launch;
