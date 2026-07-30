@@ -23,3 +23,15 @@ button, input { font:inherit; } button { cursor:pointer; }
 .inspector-head{min-height:76px}.mode-badge{font-size:9px;color:var(--brand);font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}.ctl-group,.inspector-section{padding:19px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:17px}.controls h3{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);font-weight:700}.ctl{display:flex;flex-direction:column;gap:7px}.ctl label{font-size:12px;color:var(--text);font-weight:520;display:flex;justify-content:space-between;gap:8px}.ctl .val{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--brand);font-weight:600}.range-labels{display:flex;justify-content:space-between;text-transform:uppercase;letter-spacing:.08em;color:var(--disabled);font-size:9px;margin-top:-1px}.checkbox{gap:4px}.checkbox label{align-items:center;justify-content:flex-start;gap:9px;cursor:pointer}.checkbox input{accent-color:var(--brand);width:15px;height:15px}.checkbox small{color:var(--muted);font-size:10px;padding-left:24px}.lyrics-hint{border:1px solid var(--border);border-radius:5px;background:var(--raised);padding:11px;color:var(--muted);font-size:11px;line-height:1.5}.mix-section{border-bottom:0}
 #drop-overlay{position:fixed;inset:0;z-index:20;background:rgba(16,17,18,.88);border:2px dashed var(--brand);display:none;align-items:center;justify-content:center;pointer-events:none}.drop-hint{font-size:28px;font-weight:650;color:var(--brand)}#drop-overlay.on{display:flex}
 @media (max-width:900px){.app-shell{grid-template-columns:205px minmax(360px,1fr) 250px}.track-head,.transport-bar{padding-left:20px;padding-right:20px}.waveform{margin-left:20px;margin-right:20px}.controls .ctl-group,.controls .inspector-section{padding-left:13px;padding-right:13px}}
+
+/* --- processing spinner + long-name fixes --- */
+/* let the track-head text column shrink so the timestamp is never capped */
+.track-head>div{min-width:0}
+.time-readout{flex-shrink:0}
+.track-status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-status:empty{display:none}
+/* spinning circle on the provisional library entry while stems separate */
+.lib-spin{display:inline-block;width:12px;height:12px;margin-right:8px;vertical-align:-1px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--brand);animation:libspin .8s linear infinite}
+@keyframes libspin{to{transform:rotate(360deg)}}
+.lib-pending{cursor:default}
+.lib-pending:hover{background:none}

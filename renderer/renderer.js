@@ -117,6 +117,7 @@ function paintRange(input) {
 function paintRanges() { document.querySelectorAll('input[type="range"]').forEach(paintRange); }
 function setStatus(msg, cls = '') {
   libStatus.textContent = msg;
+  libStatus.title = msg;
   libStatus.className = `lib-status ${cls}`;
 }
 
@@ -504,6 +505,7 @@ const player = {
 // ---------- File loading ----------
 let progressOff = null;
 let activeHash = null;   // library hash of the currently loaded song
+let pendingName = null;  // provisional library row shown while stems separate
 
 function beginLoad(name) {
   browseBtn.classList.add('hidden');   // status text takes over the space
@@ -516,12 +518,14 @@ function beginLoad(name) {
 
 function endLoad() {
   browseBtn.classList.remove('hidden');
+  if (pendingName) { pendingName = null; renderLibrary({ fit: false }); }
 }
 
 async function finishLoad(result, name, t0) {
+  pendingName = null;
   const { vocals, accompaniment, hash, cached } = result;
   // cached loads are instant — no need for a status line; only report fresh separations
-  setStatus(cached ? '' : `${name} — separated in ${Math.round((Date.now() - t0) / 1000)}s ✓`, cached ? '' : 'ok');
+  setStatus(cached ? '' : `Separated in ${Math.round((Date.now() - t0) / 1000)}s ✓ · ${name}`, cached ? '' : 'ok');
   const [vAB, iAB, lyrics] = await Promise.all([
     dropoutApi.readFile(vocals),
     dropoutApi.readFile(accompaniment),
@@ -534,7 +538,7 @@ async function finishLoad(result, name, t0) {
   activeHash = hash || null;
   trackTitle.textContent = name.replace(/\.[^.]+$/, '');
   trackTitle.title = name;
-  trackStatus.textContent = cached ? 'Status: Ready from cache' : 'Status: Stems separated and ready';
+  trackStatus.textContent = '';
   emptyState.classList.add('hidden');
   transportEl.classList.remove('hidden');
   controlsEl.classList.remove('hidden');
@@ -547,8 +551,10 @@ async function handleFile(filePath) {
   if (!filePath) return;
   const name = filePath.split('/').pop();
   beginLoad(name);
+  pendingName = name;
+  renderLibrary({ fit: false });
   progressOff = dropoutApi.onProgress(({ elapsed }) => {
-    setStatus(`${name} — separating… ${elapsed}s (first run downloads the model)`);
+    setStatus(`Separating… ${elapsed}s (first run may download the model) · ${name}`);
   });
 
   try {
@@ -587,8 +593,22 @@ async function renderLibrary({ fit = true } = {}) {
   const slice = libEntries.slice(libPage * LIB_PAGE_SIZE, (libPage + 1) * LIB_PAGE_SIZE);
 
   libraryList.textContent = '';
-  libEmpty.classList.toggle('hidden', libEntries.length > 0);
-  libTable.classList.toggle('hidden', libEntries.length === 0);
+  libEmpty.classList.toggle('hidden', libEntries.length > 0 || !!pendingName);
+  libTable.classList.toggle('hidden', libEntries.length === 0 && !pendingName);
+  if (pendingName) {
+    const tr = document.createElement('tr');
+    tr.className = 'lib-item lib-pending';
+    const name = document.createElement('td');
+    name.className = 'lib-name';
+    const spin = document.createElement('span');
+    spin.className = 'lib-spin';
+    name.append(spin, document.createTextNode(pendingName));
+    name.title = pendingName;
+    const act = document.createElement('td');
+    act.className = 'lib-act';
+    tr.append(name, act);
+    libraryList.appendChild(tr);
+  }
   for (const entry of slice) {
     const tr = document.createElement('tr');
     tr.className = 'lib-item' + (entry.hash === activeHash ? ' active' : '');
@@ -612,7 +632,7 @@ async function renderLibrary({ fit = true } = {}) {
       try {
         const res = await dropoutApi.pickLyrics(entry.hash);
         if (!res) return; // cancelled
-        setStatus(`${entry.name} — lyrics attached (${res.lineCount} lines) ✓`, 'ok');
+        setStatus(`Lyrics attached (${res.lineCount} lines) ✓ · ${entry.name}`, 'ok');
         if (entry.hash === activeHash) player.setLyrics(await dropoutApi.getLyrics(entry.hash));
         renderLibrary({ fit: false });
       } catch (err) {
