@@ -38,7 +38,7 @@ button, input { font:inherit; } button { cursor:pointer; }
 
 /* --- collapsible library rail --- */
 .lib-head-btns{display:flex;align-items:center;gap:2px}
-#lib-collapse{font-size:15px;transition:transform .22s,color .15s,background .15s}
+#lib-collapse{font-size:22px;transition:transform .22s,color .15s,background .15s}
 .app-shell{transition:grid-template-columns .22s ease}
 .app-shell.lib-collapsed{grid-template-columns:46px minmax(380px,1fr) 280px}
 .lib-collapsed .library{overflow:hidden}
@@ -52,3 +52,8 @@ button, input { font:inherit; } button { cursor:pointer; }
    inside a centered line box the glyphs ride ~2px high; pull them back down --- */
 .transport-bar .time{line-height:1;transform:translateY(1px)}
 input[type=range]{margin:0}
+
+/* range inputs are inline-level: they sit on the text baseline inside
+   .seek-wrap and leave descender space below — flex the wrap so the
+   track centers exactly on the side timestamps */
+.seek-wrap{display:flex;align-items:center}
