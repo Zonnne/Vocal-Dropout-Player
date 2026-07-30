@@ -73,8 +73,8 @@ function drawTimeline() {
   g.fillStyle = 'rgba(255, 107, 107, 0.18)';
   for (const ev of player.dropoutHistory) {
     const x0 = (ev.start / player.duration) * w;
-    const x1 = (ev.end / player.duration) * w;
-    g.fillRect(x0, 0, Math.max(2, x1 - x0), h);
+    const x1 = (Math.min(ev.end, playedUntil) / player.duration) * w;
+    if (x1 > x0) g.fillRect(x0, 0, Math.max(2, x1 - x0), h);
   }
 
   for (let bar = 0; bar < barCount; bar++) {
@@ -84,7 +84,7 @@ function drawTimeline() {
     for (let i = start; i < end; i++) peak = Math.max(peak, Math.abs(data[i]));
 
     const time = ((bar + 0.5) / barCount) * player.duration;
-    const isDropout = player.dropoutHistory.some(ev => time >= ev.start && time < ev.end);
+    const isDropout = time <= playedUntil && player.dropoutHistory.some(ev => time >= ev.start && time < ev.end);
     g.strokeStyle = isDropout ? 'rgba(255, 107, 107, 0.95)'
       : time <= playedUntil ? 'rgba(255, 159, 28, 0.95)' : 'rgba(112, 117, 123, 0.72)';
     const x = ((bar + 0.5) / barCount) * w;
