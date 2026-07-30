@@ -1,6 +1,6 @@
 {
   "name": "vocal-dropout-player",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Desktop music player with AI stem separation and random vocal dropouts",
   "main": "main.js",
   "scripts": {
