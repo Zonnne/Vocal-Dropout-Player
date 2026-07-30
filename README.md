@@ -8,6 +8,8 @@ music keeps going. Your mind fills in the missing voice — that act of
 mental generation is the exercise. Because the timing is random, you can't
 memorize the pattern
 
+<img width="2560" height="1438" alt="image" src="https://github.com/user-attachments/assets/486736ae-1c2c-4f8f-9323-64a14ffeaef9" />
+
 ## Install
 
 Download from [Releases](https://github.com/Zonnne/Vocal-Dropout-Player/releases):
